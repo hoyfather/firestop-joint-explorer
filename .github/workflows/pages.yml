@@ -1,4 +1,4 @@
-name: Publish and check source
+name: Publish and update catalogue
 on:
   push:
     branches: [main]
@@ -23,19 +23,21 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Check KICT source without modifying the catalog
-        id: source_check
-        continue-on-error: true
-        run: python scripts/check_kict.py
-      - name: Save check status
-        if: steps.source_check.outcome == 'success'
+      - name: Install parser dependencies
+        if: github.event_name != 'push'
+        run: pip install pdfplumber==0.11.7 pymupdf==1.26.5
+      - name: Refresh from official source
+        if: github.event_name != 'push'
+        run: python scripts/update.py
+      - name: Save verified catalogue
+        if: github.event_name != 'push'
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add update-status.json
+          git add index.html update-status.json baseline-inventory.json docs/ rows/
           if ! git diff --cached --quiet; then
-            git commit -m 'Record KICT inventory check'
-            git push
+            git commit -m 'Update KICT firestop catalogue'
+            git push origin HEAD:main
           fi
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
@@ -44,6 +46,3 @@ jobs:
       - name: Deploy
         id: deploy
         uses: actions/deploy-pages@v4
-      - name: Signal check failure
-        if: steps.source_check.outcome == 'failure'
-        run: exit 1
