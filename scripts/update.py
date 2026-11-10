@@ -133,7 +133,7 @@ def refresh(old, entries, notices, reader=read, baseline=None):
                 match=find_pdf(rec,notices,reader)
                 if match and (changed or not rec['haspdf'] or match[3] != rec.get('notice') or not (ROOT/'docs'/f"{rec['n']}.pdf").exists() or hashlib.sha256(match[0]).digest() != hashlib.sha256((ROOT/'docs'/f"{rec['n']}.pdf").read_bytes()).digest()):
                     content,pages,first,notice,_=match
-                    rec.update(haspdf=True,pages=pages,firsttext=first,notice=notice,source_type='공고 첨부파일',form='',frame='',insulation='',evidence='')
+                    rec.update(haspdf=True,pages=pages,firsttext=first,notice=notice,source_type='공고 첨부파일',form='',frame='',insulation='',evidence='',issue='')
                     files[rec['n']]=content
                 elif not olditem:
                     rec['issue']='세부 PDF를 자동으로 확정하지 못했습니다. 연구원 공고를 확인하세요.'
@@ -146,7 +146,9 @@ def main():
     path=ROOT/'index.html'; html=path.read_text(encoding='utf8'); m=re.search(r'const DATA=(\[.*?\]);let cat=',html,re.S)
     if not m: raise RuntimeError('기존 목록을 찾지 못했습니다')
     old=json.loads(m.group(1)); statuspath=ROOT/'update-status.json'; status=json.loads(statuspath.read_text())
-    since=status.get('catalog_reference_date','2026-10-31'); notices=notices_since(since)
+    since=status.get('catalog_reference_date','2026-10-31')
+    if date < since: raise ValueError('원본 기준일이 기존 자료보다 오래되어 갱신을 중단합니다')
+    notices=notices_since(since)
     baseline_path=ROOT/'baseline-inventory.json'
     baseline=json.loads(baseline_path.read_text(encoding='utf8'))
     result,images,files,changes=refresh(old,entries,notices,baseline=baseline)
