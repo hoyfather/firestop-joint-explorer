@@ -19,7 +19,7 @@ updated,imgs,files,changes=u.refresh(oldsep,octo,notices,reader,baseline={k:v['r
 new={r['code']:r for r in updated if r['code'] not in sep}
 assert len(updated)==59 and set(new)==set(octo)-set(sep)
 for rec in new.values():
- assert rec['haspdf'] and rec['n'] in files and rec['n'] in imgs
+ assert rec['haspdf'] and rec['n'] in files and rec['n'] in imgs, (rec, sorted(files))
  assert u.norm(rec['structure']) in u.norm(rec['firsttext'])
 assert new['FS-FF26-1029-2']['opening']=='350 이하'
 assert new['FS-WW26-1029-1']['opening']=='260 이하'
