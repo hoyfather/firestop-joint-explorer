@@ -38,6 +38,14 @@ jobs:
                   print(target, len(data), title)
           assert Path('september.pdf').exists() and Path('october.pdf').exists()
           PY
+      - name: Install parser dependencies
+        run: pip install pdfplumber==0.11.7 pymupdf==1.26.5
+      - name: Test historical and live notice matching
+        run: |
+          mkdir inventory
+          cp september.pdf october.pdf notice6036.html inventory/
+          python scripts/test_update.py
+          python scripts/test_live.py
       - uses: actions/upload-artifact@v4
         with:
           name: inventory-fixtures
