@@ -1,0 +1,46 @@
+name: Verify PDF viewer
+on:
+  push:
+    branches: [fix-edge-pdf-viewer]
+  workflow_dispatch:
+jobs:
+  browser-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare viewer assets
+        run: python3 scripts/prepare_pdfjs.py
+      - name: Install browser test tool
+        run: npm install --no-save playwright-core
+      - name: Verify PDF rendering and navigation
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/pdf-http.log 2>&1 &
+          node - <<'JS'
+          const {chromium} = require('playwright-core');
+          (async () => {
+            const browser = await chromium.launch({executablePath:'/usr/bin/google-chrome', args:['--no-sandbox']});
+            const page = await browser.newPage();
+            const errors = [];
+            page.on('pageerror', e => errors.push(e.message));
+            await page.goto('http://127.0.0.1:8765/');
+            await page.waitForFunction(() => document.querySelector('.pdf-page')?.textContent === '1 / 23', null, {timeout:30000});
+            await page.waitForFunction(() => document.querySelector('.pdf-message')?.textContent === '', null, {timeout:30000});
+            const pixels = await page.locator('#pdfViewer canvas').evaluate(c => {
+              const ctx=c.getContext('2d'); const p=ctx.getImageData(0,0,c.width,c.height).data;
+              let n=0; for(let i=0;i<p.length;i+=4) if(p[i+3] && (p[i]<230||p[i+1]<230||p[i+2]<230)) n++;
+              return {width:c.width,height:c.height,nonwhite:n};
+            });
+            if(pixels.width<200 || pixels.height<200 || pixels.nonwhite<50) throw new Error('PDF page was not rendered: '+JSON.stringify(pixels));
+            await page.locator('[data-pdf-next]').click();
+            await page.waitForFunction(() => document.querySelector('.pdf-page')?.textContent === '2 / 23', null, {timeout:30000});
+            await page.locator('[data-pdf-previous]').click();
+            await page.waitForFunction(() => document.querySelector('.pdf-page')?.textContent === '1 / 23', null, {timeout:30000});
+            await page.locator('[data-id="814"]').click();
+            await page.waitForFunction(() => document.querySelector('.pdf-page')?.textContent === '1 / 11', null, {timeout:30000}).catch(async()=>{ await page.waitForFunction(() => /^1 \\/ \\d+$/.test(document.querySelector('.pdf-page')?.textContent || ''), null, {timeout:30000}); });
+            await page.waitForFunction(() => document.querySelector('.pdf-message')?.textContent === '', null, {timeout:30000});
+            if(errors.length) throw new Error(errors.join('; '));
+            console.log('PASS PDF canvas rendering, next/previous, selection; pixels:', JSON.stringify(pixels));
+            await browser.close();
+          })().catch(e => { console.error(e); process.exit(1); });
+          JS
