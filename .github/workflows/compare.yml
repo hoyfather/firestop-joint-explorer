@@ -1,0 +1,45 @@
+name: Compare inventory sources
+on:
+  push:
+    branches: [test-monthly-update]
+  workflow_dispatch:
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Collect official inventories
+        run: |
+          python - <<'PY'
+          import sys
+          from pathlib import Path
+          from urllib.parse import urlencode
+          sys.path.insert(0, 'scripts')
+          from check_kict import Rows, read, LIST_URL, DOWNLOAD_URL
+          import re
+          raw=read(LIST_URL)
+          Path('inventory-list.html').write_bytes(raw)
+          p=Rows();p.feed(raw.decode('utf-8'))
+          for row in p.rows:
+              title=' '.join(' '.join(row['text']).split())
+              if '내화채움구조' not in title or '전체 인정현황' not in title: continue
+              for action in row['onclick']:
+                  match=re.search(r"egov_download_atchfile\('government',\s*'[^']*',\s*'([^']*)',\s*'([^']*)'\)",action)
+                  if not match: continue
+                  if '2026. 09. 30' in title: target='september.pdf'
+                  elif '2026. 10. 31' in title: target='october.pdf'
+                  else: continue
+                  name,system=match.groups()
+                  data=read(DOWNLOAD_URL+urlencode({'filegubun':'government','systemfilename':system,'userfilename':name}))
+                  assert data.startswith(b'%PDF')
+                  Path(target).write_bytes(data)
+                  print(target, len(data), title)
+          assert Path('september.pdf').exists() and Path('october.pdf').exists()
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: inventory-fixtures
+          path: |
+            september.pdf
+            october.pdf
+            inventory-list.html
