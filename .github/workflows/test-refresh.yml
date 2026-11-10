@@ -1,0 +1,28 @@
+name: Test scheduled catalogue update
+on:
+  push:
+    branches: [prepare-scheduled-refresh]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install pdfplumber==0.11.7 pymupdf==1.26.5
+      - name: Exercise actual update without publishing
+        run: |
+          python scripts/update.py
+          python - <<'PY'
+          import json,re
+          from pathlib import Path
+          html=Path('index.html').read_text()
+          rows=json.loads(re.search(r'const DATA=(\[.*?\]);let cat=',html,re.S).group(1))
+          status=json.loads(Path('update-status.json').read_text())
+          assert status['catalog_automatically_updated'] and len(rows)>=59
+          assert len(rows)==len({r['code'] for r in rows})
+          assert all((Path('rows')/f"{r['n']}.png").exists() for r in rows)
+          print('Update test passed:',len(rows),'records',status['catalog_reference_date'])
+          PY
