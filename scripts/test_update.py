@@ -12,8 +12,7 @@ oldsep=[r for r in old if r['code'] in sep]
 notices=[('2026-10-29','6036','[신규인정] ㈜드림이앤씨(031-304-1700) DR PAD')]
 def reader(url):
  if url.startswith(u.DETAIL): return (fixtures/'notice6036.html').read_bytes()
- if 'c7569ef2' in url: return (base/'docs/814.pdf').read_bytes()
- if '5782904d' in url: return (base/'docs/869.pdf').read_bytes()
+ if 'c7569ef2' in url or '5782904d' in url: return u.read(url)
  raise ValueError(url)
 updated,imgs,files,changes=u.refresh(oldsep,octo,notices,reader,baseline={k:v['row'] for k,v in sep.items()})
 new={r['code']:r for r in updated if r['code'] not in sep}
