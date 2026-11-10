@@ -19,7 +19,9 @@ jobs:
           node - <<'JS'
           const {chromium} = require('playwright-core');
           (async () => {
-            const browser = await chromium.launch({executablePath:'/usr/bin/google-chrome', args:['--no-sandbox']});
+            const fs = require('fs'); const executablePath = ['/usr/bin/microsoft-edge', '/usr/bin/microsoft-edge-stable', '/usr/bin/google-chrome'].find(p => fs.existsSync(p));
+            console.log('BROWSER',executablePath);
+            const browser = await chromium.launch({executablePath, args:['--no-sandbox']});
             const page = await browser.newPage();
             const errors = [];
             page.on('pageerror', e => errors.push(e.message));
@@ -37,7 +39,7 @@ jobs:
             await page.locator('[data-pdf-previous]').click();
             await page.waitForFunction(() => document.querySelector('.pdf-page')?.textContent === '1 / 23', null, {timeout:30000});
             await page.locator('[data-id="814"]').click();
-            await page.waitForFunction(() => document.querySelector('.pdf-page')?.textContent === '1 / 11', null, {timeout:30000}).catch(async()=>{ await page.waitForFunction(() => /^1 \\/ \\d+$/.test(document.querySelector('.pdf-page')?.textContent || ''), null, {timeout:30000}); });
+            await page.waitForFunction(() => document.querySelector('.pdf-page')?.textContent === '1 / 20', null, {timeout:30000});
             await page.waitForFunction(() => document.querySelector('.pdf-message')?.textContent === '', null, {timeout:30000});
             if(errors.length) throw new Error(errors.join('; '));
             console.log('PASS PDF canvas rendering, next/previous, selection; pixels:', JSON.stringify(pixels));
