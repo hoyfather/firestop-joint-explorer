@@ -39,6 +39,8 @@ jobs:
             git commit -m 'Update KICT firestop catalogue'
             git push origin HEAD:main
           fi
+      - name: Prepare PDF viewer
+        run: python scripts/prepare_pdfjs.py
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
