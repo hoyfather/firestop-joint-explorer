@@ -1,9 +1,10 @@
 {
-  "last_checked_utc": "2026-11-10T05:09:24+00:00",
-  "source_title": "257 건축자재등[내화채움구조] 전체 인정현황 [2026. 10. 31. 기준] 건설시험인증본부 2026-11-05 파일 다운로드 68",
-  "source_url": "https://www.kict.re.kr/governmentWeb/getGovernmentContentList.es?mid=a10602050000&pid=92",
+  "last_checked_utc": "2026-11-10T07:23:48+00:00",
+  "source_title": "257 건축자재등[내화채움구조] 전체 인정현황 [2026. 10. 31. 기준] 건설시험인증본부 2026-11-05 파일 다운로드 71",
+  "source_url": "https://www.kict.re.kr/attachFileDownload.es?filegubun=government&systemfilename=11e31e8d-aaf4-4478-9389-dcdf92eaac2c00.pdf&userfilename=%EA%B1%B4%EC%B6%95%EC%9E%90%EC%9E%AC%EB%93%B1%5B%EB%82%B4%ED%99%94%EC%B1%84%EC%9B%80%EA%B5%AC%EC%A1%B0%5D+%EC%A0%84%EC%B2%B4+%EC%9D%B8%EC%A0%95%ED%98%84%ED%99%A9+%5B2026.+10.+31.+%EA%B8%B0%EC%A4%80%5D.pdf",
   "source_sha256": "3ee1744d1fd9964e0e1cfab011516eb6a1f42d783b2d6c0deed36b4a441974b3",
   "catalog_reference_date": "2026-10-31",
-  "source_differs": false,
-  "catalog_automatically_updated": false
+  "catalog_automatically_updated": true,
+  "changes": [],
+  "unmatched_pdf_count": 0
 }
