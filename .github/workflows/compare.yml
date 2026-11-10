@@ -44,4 +44,6 @@ jobs:
           path: |
             september.pdf
             october.pdf
-            inventory-list.html\n            notices.html\n            notice6036.html
+            inventory-list.html
+            notices.html
+            notice6036.html
