@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Refresh the catalogue from the KICT inventory; uncertain PDF matches are never published."""
-import argparse, hashlib, io, json, re, sys
+import argparse, hashlib, io, json, re, sys, zipfile
 from datetime import datetime, timezone
 from functools import lru_cache
 from html.parser import HTMLParser
@@ -101,10 +101,21 @@ def find_pdf(record, notices, reader=read):
         if not phone and norm(company.split('(')[0]) not in norm(title): continue
         source=reader(DETAIL+ident).decode('utf8')
         attachments=list(dict.fromkeys(ATTACH.findall(source)))
-        candidates=[(n,s) for n,s in attachments if n.lower().endswith('.pdf') and target in norm(n)]
+        candidates=[]
+        for name, system in attachments:
+            if name.lower().endswith('.pdf') and target in norm(name):
+                candidates.append((name, system, None))
+            elif name.lower().endswith('.zip'):
+                url=DOWNLOAD+urlencode({'filegubun':'government','systemfilename':system,'userfilename':name})
+                archive=zipfile.ZipFile(io.BytesIO(reader(url)))
+                for member in archive.infolist():
+                    if member.filename.lower().endswith('.pdf') and target in norm(member.filename) and member.file_size < 100_000_000:
+                        candidates.append((name, system, member.filename))
         if len(candidates)!=1: continue
-        name,system=candidates[0]
-        content=reader(DOWNLOAD+urlencode({'filegubun':'government','systemfilename':system,'userfilename':name}))
+        name,system,member=candidates[0]
+        url=DOWNLOAD+urlencode({'filegubun':'government','systemfilename':system,'userfilename':name})
+        content=reader(url)
+        if member is not None: content=zipfile.ZipFile(io.BytesIO(content)).read(member)
         if not content.startswith(b'%PDF'): continue
         doc=fitz.open(stream=content,filetype='pdf'); first=' '.join(doc[i].get_text() for i in range(min(2,len(doc))))
         if target not in norm(first): continue
