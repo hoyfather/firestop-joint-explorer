@@ -19,6 +19,8 @@ jobs:
           import re
           raw=read(LIST_URL)
           Path('inventory-list.html').write_bytes(raw)
+          Path('notices.html').write_bytes(read('https://www.kict.re.kr/governmentWeb/getGovernmentContentList.es?currentPage=1&mid=a10602050000&pid=83'))
+          Path('notice6036.html').write_bytes(read('https://www.kict.re.kr/governmentWeb/getGovernmentContentsView.es?mid=a10602050000&pid=83&id=6036'))
           p=Rows();p.feed(raw.decode('utf-8'))
           for row in p.rows:
               title=' '.join(' '.join(row['text']).split())
@@ -42,4 +44,4 @@ jobs:
           path: |
             september.pdf
             october.pdf
-            inventory-list.html
+            inventory-list.html\n            notices.html\n            notice6036.html
