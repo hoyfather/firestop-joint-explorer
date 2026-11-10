@@ -1,0 +1,28 @@
+name: Verify and recover source PDFs
+on:
+  push:
+    branches: [test-monthly-update]
+    paths: ['.github/workflows/repair.yml', 'scripts/repair_pdfs.py', 'scripts/original-pdf-sha256.json']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: test-monthly-update
+      - run: pip install pdfplumber==0.11.7 pymupdf==1.26.5
+      - name: Verify original checksums against KICT files
+        run: python scripts/repair_pdfs.py
+      - name: Commit verified files to test branch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/
+          if ! git diff --cached --quiet; then
+            git commit -m 'Restore PDFs matching original checksums'
+            git push origin HEAD:test-monthly-update
+          fi
