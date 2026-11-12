@@ -1,0 +1,17 @@
+# Netlify 배포 설정 (Netlify 화면의 Build settings 보다 우선 적용)
+[build]
+  command = "python3 scripts/build_site.py"
+  publish = "dist"
+
+# 검색엔진 색인 거부 (접근 차단 기능은 아님)
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "same-origin"
+
+[[headers]]
+  for = "/assets/*.mjs"
+  [headers.values]
+    Content-Type = "text/javascript; charset=utf-8"

@@ -1,8 +1,8 @@
 name: Monthly catalogue update
 # 연구원(KICT) 내화채움구조 전체 인정현황을 매월 점검해 이 저장소의 데이터
 # (index.html 의 DATA, docs/*.pdf, rows/*.png, update-status.json)를 갱신합니다.
-# 사내 공유본은 같은 날 오후 Claude 예약 작업이 이 결과를 받아 반영합니다.
-# GitHub Pages 공개 배포는 하지 않습니다.
+# 커밋이 올라가면 Netlify가 저장소를 받아 자동으로 다시 배포합니다(netlify.toml).
+# GitHub Pages 배포는 하지 않습니다.
 on:
   workflow_dispatch:
   schedule:
